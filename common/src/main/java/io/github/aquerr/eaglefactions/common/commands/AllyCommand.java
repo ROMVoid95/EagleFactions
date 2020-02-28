@@ -3,8 +3,10 @@ package io.github.aquerr.eaglefactions.common.commands;
 import io.github.aquerr.eaglefactions.api.EagleFactions;
 import io.github.aquerr.eaglefactions.api.entities.AllyRequest;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.common.EagleFactionsPlugin;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
+import io.github.aquerr.eaglefactions.common.managers.CommandManager;
 import io.github.aquerr.eaglefactions.common.messaging.MessageLoader;
 import io.github.aquerr.eaglefactions.common.messaging.Placeholders;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
@@ -23,6 +25,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+@EagleFactionsCommand(requiredRank = FactionMemberType.OFFICER, requireAdminMode = false)
 public class AllyCommand extends AbstractCommand
 {
     public AllyCommand(final EagleFactions plugin)
@@ -33,18 +36,16 @@ public class AllyCommand extends AbstractCommand
     @Override
     public CommandResult execute(final CommandSource source, final CommandContext context) throws CommandException
     {
-        final Faction selectedFaction = context.requireOne(Text.of("faction"));
+		if (!CommandManager.testPermission(this, source))
+			throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.DARK_RED, Messages.YOU_DONT_HAVE_ACCESS_TO_DO_THIS));
+
+		final Faction selectedFaction = context.requireOne(Text.of("faction"));
 
         if(!(source instanceof Player))
             throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.ONLY_IN_GAME_PLAYERS_CAN_USE_THIS_COMMAND));
 
         final Player player = (Player) source;
-        final Optional<Faction> optionalPlayerFaction = getPlugin().getFactionLogic().getFactionByPlayerUUID(player.getUniqueId());
-
-        if(!optionalPlayerFaction.isPresent())
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_MUST_BE_IN_FACTION_IN_ORDER_TO_USE_THIS_COMMAND));
-
-        final Faction playerFaction = optionalPlayerFaction.get();
+        final Faction playerFaction = getPlugin().getFactionLogic().getFactionByPlayerUUID(player.getUniqueId()).get();
 
         if(playerFaction.getName().equals(selectedFaction.getName()))
         	throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_CANNOT_INVITE_YOURSELF_TO_THE_ALLIANCE));
@@ -76,9 +77,6 @@ public class AllyCommand extends AbstractCommand
 			}
 			return CommandResult.success();
         }
-
-        if(!playerFaction.getLeader().equals(player.getUniqueId()) && !playerFaction.getOfficers().contains(player.getUniqueId()))
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_MUST_BE_THE_FACTIONS_LEADER_OR_OFFICER_TO_DO_THIS));
 
         if(playerFaction.getEnemies().contains(selectedFaction.getName()))
             throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_ARE_IN_WAR_WITH_THIS_FACTION + " " + Messages.SEND_THIS_FACTION_A_PEACE_REQUEST_FIRST_BEFORE_INVITING_THEM_TO_ALLIES));

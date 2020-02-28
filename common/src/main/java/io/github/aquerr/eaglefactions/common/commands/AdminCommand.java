@@ -1,8 +1,10 @@
 package io.github.aquerr.eaglefactions.common.commands;
 
 import io.github.aquerr.eaglefactions.api.EagleFactions;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.common.EagleFactionsPlugin;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
+import io.github.aquerr.eaglefactions.common.managers.CommandManager;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -12,6 +14,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+@EagleFactionsCommand(requiredRank = FactionMemberType.NONE, requireAdminMode = false)
 public class AdminCommand extends AbstractCommand
 {
     public AdminCommand(final EagleFactions plugin)
@@ -22,6 +25,9 @@ public class AdminCommand extends AbstractCommand
     @Override
     public CommandResult execute(final CommandSource source, final CommandContext context) throws CommandException
     {
+        if (!CommandManager.testPermission(this, source))
+            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.DARK_RED, Messages.YOU_DONT_HAVE_ACCESS_TO_DO_THIS));
+
         if (!(source instanceof Player))
             throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.ONLY_IN_GAME_PLAYERS_CAN_USE_THIS_COMMAND));
 

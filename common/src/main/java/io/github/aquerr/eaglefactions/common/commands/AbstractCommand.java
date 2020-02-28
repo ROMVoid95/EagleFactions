@@ -4,6 +4,7 @@ import io.github.aquerr.eaglefactions.api.EagleFactions;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
 import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
+import io.github.aquerr.eaglefactions.common.messaging.Messages;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -39,6 +40,18 @@ public abstract class AbstractCommand implements CommandExecutor
 //            return CommandResult.success();
 //
 //        final Player player = (Player)source;
+//        final Class<? extends AbstractCommand> clazz = this.getClass();
+//        final EagleFactionsCommand annotation = clazz.getAnnotation(EagleFactionsCommand.class);
+//
+//        if (annotation == null)
+//            return CommandResult.success();
+//
+//        if (annotation.requireAdminMode() && !this.plugin.getPlayerManager().hasAdminMode(player))
+//            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.DARK_RED, Messages.YOU_DONT_HAVE_ACCESS_TO_DO_THIS));
+//
+//        if (annotation.requiredRank() == FactionMemberType.NONE)
+//            return CommandResult.success();
+//
 //        final Optional<Faction> optionalFaction = this.plugin.getFactionLogic().getFactionByPlayerUUID(player.getUniqueId());
 //        if (!optionalFaction.isPresent())
 //            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.DARK_RED, "You don't have access to use this command!"));
@@ -46,22 +59,11 @@ public abstract class AbstractCommand implements CommandExecutor
 //        final Faction faction = optionalFaction.get();
 //        final FactionMemberType playerMemberType = faction.getPlayerMemberType(player.getUniqueId());
 //
-//        //Check if player has access for this command.
-//        final Class<? extends AbstractCommand> clazz = this.getClass();
-//        final RequiredRank annotation = clazz.getAnnotation(RequiredRank.class);
-//        if (annotation != null)
-//        {
-//            if (canUseCommand(annotation.rank(), playerMemberType))
-//                return CommandResult.success();
-//            else
-//            {
-//                throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.DARK_RED, "You don't have access to use this command!"));
-//            }
-//        }
-//
-//        return CommandResult.success();
+//        if (!canUseCommand(annotation.requiredRank(), playerMemberType))
+//            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.DARK_RED, "You don't have access to use this command!"));
+//        else return CommandResult.success();
 //    }
-
+//
 //    private boolean canUseCommand(final FactionMemberType requiredRank, final FactionMemberType playerRank)
 //    {
 //        switch (requiredRank)
