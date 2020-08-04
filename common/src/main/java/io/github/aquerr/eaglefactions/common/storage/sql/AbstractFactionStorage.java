@@ -50,6 +50,8 @@ public abstract class AbstractFactionStorage implements FactionStorage
     private static final String SELECT_ALLY_PERMS_WHERE_FACTIONNAME = "SELECT * FROM AllyPerms WHERE FactionName=?";
     private static final String SELECT_FACTION_WHERE_FACTIONNAME = "SELECT * FROM Factions WHERE Name=?";
 
+    private static final String SELECT_ALLYS_WHERE_FACTIONNAME = "SELECT * FROM Factions WHERE (SELECT * FROM FactionAlliances WHERE FactionName=? OR AllianceName=?)";
+
     private static final String DELETE_FACTIONS = "DELETE FROM Factions";
 
     private static final String DELETE_FACTION_WHERE_FACTIONNAME = "DELETE FROM Factions WHERE Name=?";
@@ -307,6 +309,7 @@ public abstract class AbstractFactionStorage implements FactionStorage
             preparedStatement.execute();
             preparedStatement.close();
 
+            //TODO: Replace with "select and update".
             deleteFactionOfficers(connection, faction.getName());
             deleteFactionMembers(connection, faction.getName());
             deleteFactionRecruits(connection, faction.getName());
@@ -396,6 +399,7 @@ public abstract class AbstractFactionStorage implements FactionStorage
             byte[] chestBytes = byteArrayStream.toByteArray();
             byteArrayStream.close();
 
+            //TODO: Replace with "select and update".
             //Delete chest before
             preparedStatement = connection.prepareStatement(DELETE_FACTION_CHEST_WHERE_FACTIONNAME);
             preparedStatement.setString(1, faction.getName());

@@ -12,9 +12,6 @@ CREATE TABLE Factions (
    Leader      VARCHAR(36)                     NOT NULL,
    Home        VARCHAR(200)                    NULL,
    LastOnline  VARCHAR(200)                    NOT NULL,
-   Truces      VARCHAR                      NOT NULL,
-   Alliances    VARCHAR                     NOT NULL,
-   Enemies      VARCHAR                     NOT NULL,
    PRIMARY KEY (Name)
 );
 CREATE UNIQUE INDEX ON Factions (Name);
@@ -143,6 +140,27 @@ CREATE TABLE FactionChests (
     FOREIGN KEY (FactionName) REFERENCES Factions(Name) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX ON FactionChests (FactionName);
+
+CREATE TABLE FactionAlliances (
+    FactionName VARCHAR(200)        NOT NULL,
+    AllianceName VARCHAR(200)       NOT NULL,
+    FOREIGN KEY (FactionName) REFERENCES Factions(Name) ON DELETE CASCADE,
+    FOREIGN KEY (AllianceName) REFERENCES Factions(Name) ON DELETE CASCADE
+);
+
+CREATE TABLE FactionEnemies (
+   FactionName VARCHAR(200)        NOT NULL,
+   EnemyName VARCHAR(200)       NOT NULL,
+   FOREIGN KEY (FactionName) REFERENCES Factions(Name) ON DELETE CASCADE,
+   FOREIGN KEY (EnemyName) REFERENCES Factions(Name) ON DELETE CASCADE
+);
+
+CREATE TABLE FactionTruces (
+   FactionName VARCHAR(200)        NOT NULL,
+   TruceName VARCHAR(200)       NOT NULL,
+   FOREIGN KEY (FactionName) REFERENCES Factions(Name) ON DELETE CASCADE,
+   FOREIGN KEY (TruceName) REFERENCES Factions(Name) ON DELETE CASCADE
+);
 
 -- Create Players Table
 CREATE TABLE Players (
