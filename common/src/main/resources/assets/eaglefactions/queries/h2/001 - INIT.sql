@@ -156,10 +156,11 @@ CREATE TABLE FactionEnemies (
 );
 
 CREATE TABLE FactionTruces (
-   FactionName VARCHAR(200)        NOT NULL,
-   TruceName VARCHAR(200)       NOT NULL,
-   FOREIGN KEY (FactionName) REFERENCES Factions(Name) ON DELETE CASCADE,
-   FOREIGN KEY (TruceName) REFERENCES Factions(Name) ON DELETE CASCADE
+   faction_id INT        NOT NULL,
+   truce_id INT       NOT NULL,
+   PRIMARY KEY (faction_id, truce_id),
+   FOREIGN KEY (faction_id) REFERENCES Factions(Id) ON DELETE CASCADE,
+   FOREIGN KEY (truce_id) REFERENCES Factions(Id) ON DELETE CASCADE
 );
 
 -- Create Players Table
