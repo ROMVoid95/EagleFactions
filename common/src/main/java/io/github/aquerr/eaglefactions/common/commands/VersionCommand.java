@@ -1,12 +1,15 @@
 package io.github.aquerr.eaglefactions.common.commands;
 
 import io.github.aquerr.eaglefactions.api.EagleFactions;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
+import io.github.aquerr.eaglefactions.common.PluginPermissions;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
@@ -14,7 +17,13 @@ import org.spongepowered.api.text.format.TextColors;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class VersionCommand extends AbstractCommand
+@EagleFactionsCommand(
+        permission = PluginPermissions.VERSION_COMMAND,
+        canBeUsedFromConsole = true,
+        mustBeInFaction = false,
+        minimumRank = FactionMemberType.NONE
+)
+public class VersionCommand extends CommandBase
 {
     public VersionCommand(final EagleFactions plugin)
     {
@@ -22,7 +31,19 @@ public class VersionCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext context) throws CommandException
+    protected CommandElement[] getDefinedCommandArgs()
+    {
+        return new CommandElement[0];
+    }
+
+    @Override
+    protected Text getDescription()
+    {
+        return Text.of(Messages.COMMAND_VERSION_DESC);
+    }
+
+    @Override
+    protected CommandResult execute(CommandSource source, CommandContext context, boolean hasAdminMode) throws CommandException
     {
         try
         {

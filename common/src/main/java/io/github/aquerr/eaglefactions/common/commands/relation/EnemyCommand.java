@@ -4,9 +4,14 @@ import com.google.common.collect.ImmutableMap;
 import io.github.aquerr.eaglefactions.api.EagleFactions;
 import io.github.aquerr.eaglefactions.api.entities.ArmisticeRequest;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.common.EagleFactionsPlugin;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
+import io.github.aquerr.eaglefactions.common.PluginPermissions;
 import io.github.aquerr.eaglefactions.common.commands.AbstractCommand;
+import io.github.aquerr.eaglefactions.common.commands.CommandBase;
+import io.github.aquerr.eaglefactions.common.commands.EagleFactionsCommand;
+import io.github.aquerr.eaglefactions.common.commands.args.FactionArgument;
 import io.github.aquerr.eaglefactions.common.messaging.MessageLoader;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
 import io.github.aquerr.eaglefactions.common.messaging.Placeholders;
@@ -15,6 +20,8 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
@@ -25,7 +32,13 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-public class EnemyCommand extends AbstractCommand
+@EagleFactionsCommand(
+        permission = PluginPermissions.ENEMY_COMMAND,
+        canBeUsedFromConsole = false,
+        mustBeInFaction = true,
+        minimumRank = FactionMemberType.OFFICER
+)
+public class EnemyCommand extends CommandBase
 {
     public EnemyCommand(final EagleFactions plugin)
     {
@@ -33,24 +46,30 @@ public class EnemyCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext context) throws CommandException
+    protected CommandElement[] getDefinedCommandArgs()
+    {
+        return new CommandElement[] {
+                GenericArguments.onlyOne(new FactionArgument(super.getPlugin(), Text.of("faction")))
+        };
+    }
+
+    @Override
+    protected Text getDescription()
+    {
+        return Text.of(Messages.COMMAND_ENEMY_DESC);
+    }
+
+    @Override
+    public CommandResult execute(final CommandSource source, final CommandContext context, boolean hasAdminMode) throws CommandException
     {
         final Faction enemyFaction = context.requireOne(Text.of("faction"));
-        if(!(source instanceof Player))
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.ONLY_IN_GAME_PLAYERS_CAN_USE_THIS_COMMAND));
-
         final Player player = (Player) source;
         final Optional<Faction> optionalPlayerFaction = super.getPlugin().getFactionLogic().getFactionByPlayerUUID(player.getUniqueId());
-
-        if(!optionalPlayerFaction.isPresent())
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_MUST_BE_IN_FACTION_IN_ORDER_TO_USE_THIS_COMMAND));
-
         final Faction playerFaction = optionalPlayerFaction.get();
-
         if(playerFaction.getName().equals(enemyFaction.getName()))
             throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_CANNOT_BE_IN_WAR_WITH_YOURSELF));
 
-        if(super.getPlugin().getPlayerManager().hasAdminMode(player))
+        if(hasAdminMode)
         {
             if(playerFaction.getAlliances().contains(enemyFaction.getName()))
                 throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.THIS_FACTION_IS_YOUR_ALLY + " " + Messages.DISBAND_ALLIANCE_FIRST_TO_DECLARE_A_WAR));
@@ -69,9 +88,6 @@ public class EnemyCommand extends AbstractCommand
             }
             return CommandResult.success();
         }
-
-        if(!playerFaction.getLeader().equals(player.getUniqueId()) && !playerFaction.getOfficers().contains(player.getUniqueId()))
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_MUST_BE_THE_FACTIONS_LEADER_OR_OFFICER_TO_DO_THIS));
 
         if(playerFaction.getAlliances().contains(enemyFaction.getName()) || playerFaction.getTruces().contains(enemyFaction.getName()))
             throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.THIS_FACTION_IS_YOUR_ALLY + " " + Messages.DISBAND_ALLIANCE_FIRST_TO_DECLARE_A_WAR));

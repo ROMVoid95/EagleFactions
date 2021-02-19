@@ -2,16 +2,22 @@ package io.github.aquerr.eaglefactions.common.commands.general;
 
 import io.github.aquerr.eaglefactions.api.EagleFactions;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
 import io.github.aquerr.eaglefactions.common.PluginPermissions;
 import io.github.aquerr.eaglefactions.common.commands.AbstractCommand;
+import io.github.aquerr.eaglefactions.common.commands.CommandBase;
+import io.github.aquerr.eaglefactions.common.commands.EagleFactionsCommand;
+import io.github.aquerr.eaglefactions.common.commands.args.FactionArgument;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.service.pagination.PaginationService;
@@ -22,7 +28,13 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class InfoCommand extends AbstractCommand
+@EagleFactionsCommand(
+        permission = "",
+        canBeUsedFromConsole = true,
+        mustBeInFaction = false,
+        minimumRank = FactionMemberType.NONE
+)
+public class InfoCommand extends CommandBase
 {
     public InfoCommand(final EagleFactions plugin)
     {
@@ -30,18 +42,34 @@ public class InfoCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext context) throws CommandException
+    protected CommandElement[] getDefinedCommandArgs()
+    {
+        return new CommandElement[] {
+                GenericArguments.optional(new FactionArgument(super.getPlugin(), Text.of("faction")))
+        };
+    }
+
+    @Override
+    protected Text getDescription()
+    {
+        return Text.of(Messages.COMMAND_INFO_DESC);
+    }
+
+    @Override
+    protected CommandResult execute(CommandSource source, CommandContext context, boolean hasAdminMode) throws CommandException
     {
         final Optional<Faction> faction = context.getOne("faction");
-        if (faction.isPresent())
+
+        if (!faction.isPresent() && !(source instanceof Player))
+        {
+            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.ONLY_IN_GAME_PLAYERS_CAN_USE_THIS_COMMAND));
+        }
+        else if (faction.isPresent())
         {
             otherInfo(source, faction.get());
         }
         else
         {
-            if (!(source instanceof Player))
-                throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.ONLY_IN_GAME_PLAYERS_CAN_USE_THIS_COMMAND));
-
             final Faction playerFaction = super.getPlugin().getFactionLogic().getFactionByPlayerUUID(((Player)source).getUniqueId())
                     .orElseThrow(() -> new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_MUST_BE_IN_FACTION_IN_ORDER_TO_USE_THIS_COMMAND)));
 

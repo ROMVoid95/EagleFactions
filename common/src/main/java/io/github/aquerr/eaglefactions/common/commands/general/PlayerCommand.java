@@ -1,13 +1,20 @@
 package io.github.aquerr.eaglefactions.common.commands.general;
 
 import io.github.aquerr.eaglefactions.api.EagleFactions;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
+import io.github.aquerr.eaglefactions.common.PluginPermissions;
 import io.github.aquerr.eaglefactions.common.commands.AbstractCommand;
+import io.github.aquerr.eaglefactions.common.commands.CommandBase;
+import io.github.aquerr.eaglefactions.common.commands.EagleFactionsCommand;
+import io.github.aquerr.eaglefactions.common.commands.args.FactionPlayerArgument;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.manipulator.mutable.entity.JoinData;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -23,10 +30,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Aquerr on 2017-08-04.
- */
-public class PlayerCommand extends AbstractCommand
+@EagleFactionsCommand(
+        permission = PluginPermissions.PLAYER_COMMAND,
+        canBeUsedFromConsole = true,
+        mustBeInFaction = false,
+        minimumRank = FactionMemberType.NONE
+)
+public class PlayerCommand extends CommandBase
 {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -36,7 +46,21 @@ public class PlayerCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext context) throws CommandException
+    protected CommandElement[] getDefinedCommandArgs()
+    {
+        return new CommandElement[] {
+                GenericArguments.optional(new FactionPlayerArgument(super.getPlugin(), Text.of("player")))
+        };
+    }
+
+    @Override
+    protected Text getDescription()
+    {
+        return Text.of(Messages.COMMAND_PLAYER_DESC);
+    }
+
+    @Override
+    protected CommandResult execute(CommandSource source, CommandContext context, boolean hasAdminMode) throws CommandException
     {
         final Optional<FactionPlayer> optionalPlayer = context.getOne("player");
         if (optionalPlayer.isPresent())

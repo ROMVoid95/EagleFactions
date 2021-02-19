@@ -315,65 +315,28 @@ public class EagleFactionsPlugin implements EagleFactions
         SUBCOMMANDS.put(Arrays.asList("j", "join"), new JoinCommand(this));
 
         //Leave faction command
-        SUBCOMMANDS.put(Collections.singletonList("leave"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_LEAVE_DESC))
-                .permission(PluginPermissions.LEAVE_COMMAND)
-                .executor(new LeaveCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("leave"), new LeaveCommand(this));
 
         //Version command
-        SUBCOMMANDS.put(Arrays.asList("v", "version"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_VERSION_DESC))
-                .permission(PluginPermissions.VERSION_COMMAND)
-                .executor(new VersionCommand(this))
-                .build());
+        SUBCOMMANDS.put(Arrays.asList("v", "version"), new VersionCommand(this));
 
-        //Info command. Shows info about a faction.
-        SUBCOMMANDS.put(Arrays.asList("i", "info"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_INFO_DESC))
-                .arguments(GenericArguments.optional(new FactionArgument(this, Text.of("faction"))))
-                .executor(new InfoCommand(this))
-                .build());
+        //Info command. Shows info about the faction.
+        SUBCOMMANDS.put(Arrays.asList("i", "info"), new InfoCommand(this));
 
         //Player command. Shows info about a player. (its factions etc.)
-        SUBCOMMANDS.put(Arrays.asList("p", "player"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_PLAYER_DESC))
-                .permission(PluginPermissions.PLAYER_COMMAND)
-                .arguments(GenericArguments.optional(new FactionPlayerArgument(this, Text.of("player"))))
-                .executor(new PlayerCommand(this))
-                .build());
+        SUBCOMMANDS.put(Arrays.asList("p", "player"), new PlayerCommand(this));
 
         //Truce command
-        SUBCOMMANDS.put(Collections.singletonList("truce"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_TRUCE_DESC))
-                .permission(PluginPermissions.TRUCE_COMMAND)
-                .arguments(GenericArguments.onlyOne(new FactionArgument(this, Text.of("faction"))))
-                .executor(new TruceCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("truce"), new TruceCommand(this));
 
         //Ally command
-        SUBCOMMANDS.put(Collections.singletonList("ally"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_ALLY_DESC))
-                .permission(PluginPermissions.ALLY_COMMAND)
-                .arguments(GenericArguments.onlyOne(new FactionArgument(this, Text.of("faction"))))
-                .executor(new AllyCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("ally"), new AllyCommand(this));
 
         //Enemy command
-        SUBCOMMANDS.put(Collections.singletonList("enemy"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_ENEMY_DESC))
-                .permission(PluginPermissions.ENEMY_COMMAND)
-                .arguments(GenericArguments.onlyOne(new FactionArgument(this, Text.of("faction"))))
-                .executor(new EnemyCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("enemy"), new EnemyCommand(this));
 
         //Promote command
-        SUBCOMMANDS.put(Collections.singletonList("promote"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_PROMOTE_DESC))
-                .arguments(GenericArguments.onlyOne(new OwnFactionPlayerArgument(this, Text.of("player"))))
-                .permission(PluginPermissions.PROMOTE_COMMAND)
-                .executor(new PromoteCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("promote"), new PromoteCommand(this));
 
         //Demote command
         SUBCOMMANDS.put(Collections.singletonList("demote"), CommandSpec.builder()

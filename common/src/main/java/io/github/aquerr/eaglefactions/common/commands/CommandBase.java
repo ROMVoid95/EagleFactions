@@ -27,12 +27,12 @@ public abstract class CommandBase implements CommandCallable
 {
     private static final InputTokenizer argumentParser = InputTokenizer.quotedStrings(false);
     private final EagleFactions plugin;
-    private final CommandElement args;
+    private final CommandElement commandElements;
 
     public CommandBase(final EagleFactions plugin)
     {
         this.plugin = plugin;
-        this.args = GenericArguments.seq(getDefinedCommandArgs());
+        this.commandElements = GenericArguments.seq(getDefinedCommandArgs());
     }
 
     protected abstract CommandElement[] getDefinedCommandArgs();
@@ -60,7 +60,7 @@ public abstract class CommandBase implements CommandCallable
 
     public List<String> complete(CommandSource source, CommandArgs args, CommandContext context) {
         checkNotNull(source, "source");
-        List<String> ret = this.args.complete(source, args, context);
+        List<String> ret = this.commandElements.complete(source, args, context);
         return ImmutableList.copyOf(ret);
     }
 
@@ -91,13 +91,16 @@ public abstract class CommandBase implements CommandCallable
     public Text getUsage(CommandSource source)
     {
         checkNotNull(source, "source");
-        return this.args.getUsage(source);
+        return this.commandElements.getUsage(source);
     }
 
     @Override
     public CommandResult process(CommandSource source, String arguments) throws CommandException
     {
         final EagleFactionsCommand eagleFactionsCommand = this.getClass().getAnnotation(EagleFactionsCommand.class);
+
+        if(eagleFactionsCommand == null)
+            throw new IllegalStateException("Command class is not annotated with EagleFactionsCommand annotation! Class: " + this.getClass());
 
         checkPermission(source);
         final CommandArgs args = new CommandArgs(arguments, argumentParser.tokenize(arguments, false));
@@ -112,7 +115,7 @@ public abstract class CommandBase implements CommandCallable
 
     private void populateContext(CommandSource source, CommandArgs args, CommandContext context) throws ArgumentParseException
     {
-        this.args.parse(source, args, context);
+        this.commandElements.parse(source, args, context);
         if (args.hasNext()) {
             args.next();
             throw args.createError(t("Too many arguments!"));

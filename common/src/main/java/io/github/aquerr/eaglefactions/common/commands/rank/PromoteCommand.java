@@ -6,7 +6,11 @@ import io.github.aquerr.eaglefactions.api.entities.Faction;
 import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
+import io.github.aquerr.eaglefactions.common.PluginPermissions;
 import io.github.aquerr.eaglefactions.common.commands.AbstractCommand;
+import io.github.aquerr.eaglefactions.common.commands.CommandBase;
+import io.github.aquerr.eaglefactions.common.commands.EagleFactionsCommand;
+import io.github.aquerr.eaglefactions.common.commands.args.OwnFactionPlayerArgument;
 import io.github.aquerr.eaglefactions.common.events.EventRunner;
 import io.github.aquerr.eaglefactions.common.messaging.MessageLoader;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
@@ -15,6 +19,8 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -25,7 +31,13 @@ import java.util.UUID;
 /**
  * Created by Aquerr on 2018-06-24.
  */
-public class PromoteCommand extends AbstractCommand
+@EagleFactionsCommand(
+        permission = PluginPermissions.PROMOTE_COMMAND,
+        canBeUsedFromConsole = true,
+        mustBeInFaction = false,
+        minimumRank = FactionMemberType.OFFICER
+)
+public class PromoteCommand extends CommandBase
 {
     public PromoteCommand(final EagleFactions plugin)
     {
@@ -33,7 +45,21 @@ public class PromoteCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext context) throws CommandException
+    protected CommandElement[] getDefinedCommandArgs()
+    {
+        return new CommandElement[] {
+                GenericArguments.onlyOne(new OwnFactionPlayerArgument(super.getPlugin(), Text.of("player")))
+        };
+    }
+
+    @Override
+    protected Text getDescription()
+    {
+        return Text.of(Messages.COMMAND_PROMOTE_DESC);
+    }
+
+    @Override
+    public CommandResult execute(final CommandSource source, final CommandContext context, boolean hasAdminMode) throws CommandException
     {
         final FactionPlayer promotedPlayer = context.requireOne("player");
 
