@@ -19,7 +19,7 @@ import java.util.Optional;
 
 public class FactionChestImpl implements FactionChest
 {
-    private String factionName; //Reference to faction holding this chest
+    private final String factionName; //Reference to faction holding this chest
     private Inventory inventory;
 
     public FactionChestImpl(final String factionName)

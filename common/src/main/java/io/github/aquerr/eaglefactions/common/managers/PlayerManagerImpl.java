@@ -48,7 +48,7 @@ public class PlayerManagerImpl implements PlayerManager
     @Override
     public boolean addPlayer(final UUID playerUUID, final String playerName)
     {
-        final FactionPlayer factionPlayer = new FactionPlayerImpl(playerName, playerUUID, null, this.powerConfig.getStartingPower(), this.powerConfig.getGlobalMaxPower(), false);
+        final FactionPlayer factionPlayer = new FactionPlayerImpl(playerName, playerUUID, (Faction) null, this.powerConfig.getStartingPower(), this.powerConfig.getGlobalMaxPower(), false);
         return storageManager.savePlayer(factionPlayer);
     }
 

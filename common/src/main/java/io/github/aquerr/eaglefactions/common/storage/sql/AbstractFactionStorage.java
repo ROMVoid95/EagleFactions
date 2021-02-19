@@ -5,6 +5,7 @@ import io.github.aquerr.eaglefactions.api.EagleFactions;
 import io.github.aquerr.eaglefactions.api.entities.*;
 import io.github.aquerr.eaglefactions.common.entities.FactionChestImpl;
 import io.github.aquerr.eaglefactions.common.entities.FactionImpl;
+import io.github.aquerr.eaglefactions.common.entities.FactionState;
 import io.github.aquerr.eaglefactions.common.storage.FactionStorage;
 import io.github.aquerr.eaglefactions.common.storage.serializers.ClaimTypeSerializer;
 import io.github.aquerr.eaglefactions.common.storage.sql.h2.H2Provider;
@@ -243,27 +244,27 @@ public abstract class AbstractFactionStorage implements FactionStorage
     }
 
     @Override
-    public boolean saveFaction(final Faction faction)
+    public boolean saveFaction(final FactionState factionState)
     {
         Connection connection = null;
         try
         {
             StringBuilder stringBuilder = new StringBuilder();
-            for (String truce : faction.getTruces())
+            for (String truce : factionState.getTruces())
             {
                 stringBuilder.append(truce);
                 stringBuilder.append(",");
             }
             String truces = stringBuilder.toString();
             stringBuilder.setLength(0);
-            for (String alliance : faction.getAlliances())
+            for (String alliance : factionState.getAlliances())
             {
                 stringBuilder.append(alliance);
                 stringBuilder.append(",");
             }
             String alliances = stringBuilder.toString();
             stringBuilder.setLength(0);
-            for (String enemy : faction.getEnemies())
+            for (String enemy : factionState.getEnemies())
             {
                 stringBuilder.append(enemy);
                 stringBuilder.append(",");
@@ -282,83 +283,83 @@ public abstract class AbstractFactionStorage implements FactionStorage
 
             //Add or update?
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_FACTION_WHERE_FACTIONNAME);
-            preparedStatement.setString(1, faction.getName());
+            preparedStatement.setString(1, factionState.getName());
             final ResultSet factionSelect = preparedStatement.executeQuery();
             final boolean exists = factionSelect.next();
 
             String queryToUse = exists ? UPDATE_FACTION : INSERT_FACTION;
 
             preparedStatement = connection.prepareStatement(queryToUse);
-            preparedStatement.setString(1, faction.getName());
-            preparedStatement.setString(2, faction.getTag().toPlain());
-            preparedStatement.setString(3, faction.getTag().getColor().getId());
-            preparedStatement.setString(4, faction.getLeader().toString());
-            if (faction.getHome() != null)
-                preparedStatement.setString(5, faction.getHome().toString());
+            preparedStatement.setString(1, factionState.getName());
+            preparedStatement.setString(2, factionState.getTag().toPlain());
+            preparedStatement.setString(3, factionState.getTag().getColor().getId());
+            preparedStatement.setString(4, factionState.getLeader().toString());
+            if (factionState.getHome() != null)
+                preparedStatement.setString(5, factionState.getHome().toString());
             else preparedStatement.setString(5, null);
-            preparedStatement.setString(6, faction.getLastOnline().toString());
+            preparedStatement.setString(6, factionState.getLastOnline().toString());
             preparedStatement.setString(7, truces);
             preparedStatement.setString(8, alliances);
             preparedStatement.setString(9, enemies);
-            preparedStatement.setString(10, faction.getDescription());
-            preparedStatement.setString(11, faction.getMessageOfTheDay());
-            preparedStatement.setString(12, faction.isPublic() ? "1" : "0");
+            preparedStatement.setString(10, factionState.getDescription());
+            preparedStatement.setString(11, factionState.getMessageOfTheDay());
+            preparedStatement.setString(12, factionState.isPublic() ? "1" : "0");
             if (exists)
-                preparedStatement.setString(13, faction.getName()); //Where part
+                preparedStatement.setString(13, factionState.getName()); //Where part
 
             preparedStatement.execute();
             preparedStatement.close();
 
-            deleteFactionOfficers(connection, faction.getName());
-            deleteFactionMembers(connection, faction.getName());
-            deleteFactionRecruits(connection, faction.getName());
-            deleteFactionClaims(connection, faction.getName());
+            deleteFactionOfficers(connection, factionState.getName());
+            deleteFactionMembers(connection, factionState.getName());
+            deleteFactionRecruits(connection, factionState.getName());
+            deleteFactionClaims(connection, factionState.getName());
 
-            if (!faction.getOfficers().isEmpty())
+            if (!factionState.getOfficers().isEmpty())
             {
                 preparedStatement = connection.prepareStatement(INSERT_OFFICERS);
-                for (final UUID officer : faction.getOfficers())
+                for (final UUID officer : factionState.getOfficers())
                 {
                     preparedStatement.setString(1, officer.toString());
-                    preparedStatement.setString(2, faction.getName());
+                    preparedStatement.setString(2, factionState.getName());
                     preparedStatement.addBatch();
                 }
                 preparedStatement.executeBatch();
                 preparedStatement.close();
             }
 
-            if (!faction.getMembers().isEmpty())
+            if (!factionState.getMembers().isEmpty())
             {
                 preparedStatement = connection.prepareStatement(INSERT_MEMBERS);
-                for (UUID member : faction.getMembers())
+                for (UUID member : factionState.getMembers())
                 {
                     preparedStatement.setString(1, member.toString());
-                    preparedStatement.setString(2, faction.getName());
+                    preparedStatement.setString(2, factionState.getName());
                     preparedStatement.addBatch();
                 }
                 preparedStatement.executeBatch();
                 preparedStatement.close();
             }
 
-            if (!faction.getRecruits().isEmpty())
+            if (!factionState.getRecruits().isEmpty())
             {
                 preparedStatement = connection.prepareStatement(INSERT_RECRUITS);
-                for (final UUID recruit : faction.getRecruits())
+                for (final UUID recruit : factionState.getRecruits())
                 {
                     preparedStatement.setString(1, recruit.toString());
-                    preparedStatement.setString(2, faction.getName());
+                    preparedStatement.setString(2, factionState.getName());
                     preparedStatement.addBatch();
                 }
                 preparedStatement.executeBatch();
                 preparedStatement.close();
             }
 
-            if (!faction.getClaims().isEmpty())
+            if (!factionState.getClaims().isEmpty())
             {
                 preparedStatement = connection.prepareStatement(INSERT_CLAIM);
-                for (final Claim claim : faction.getClaims())
+                for (final Claim claim : factionState.getClaims())
                 {
-                    preparedStatement.setString(1, faction.getName());
+                    preparedStatement.setString(1, factionState.getName());
                     preparedStatement.setString(2, claim.getWorldUUID().toString());
                     preparedStatement.setString(3, claim.getChunkPosition().toString());
                     preparedStatement.setBoolean(4, claim.isAccessibleByFaction());
@@ -370,7 +371,7 @@ public abstract class AbstractFactionStorage implements FactionStorage
 
                 //Can't do it in above loop as it violates the foreign key constraint.
                 // Insert owner into the claim
-                for (final Claim claim : faction.getClaims())
+                for (final Claim claim : factionState.getClaims())
                 {
                     if (!claim.getOwners().isEmpty())
                     {
@@ -388,7 +389,7 @@ public abstract class AbstractFactionStorage implements FactionStorage
                 }
             }
 
-            List<DataView> dataViews = InventorySerializer.serializeInventory(faction.getChest().getInventory());
+            List<DataView> dataViews = InventorySerializer.serializeInventory(factionState.getChest().getInventory());
             final DataContainer dataContainer = DataContainer.createNew(DataView.SafetyMode.ALL_DATA_CLONED);
             dataContainer.set(DataQuery.of("inventory"), dataViews);
             ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
@@ -400,64 +401,64 @@ public abstract class AbstractFactionStorage implements FactionStorage
 
             //Delete chest before
             preparedStatement = connection.prepareStatement(DELETE_FACTION_CHEST_WHERE_FACTIONNAME);
-            preparedStatement.setString(1, faction.getName());
+            preparedStatement.setString(1, factionState.getName());
             preparedStatement.executeUpdate();
 
             preparedStatement = connection.prepareStatement(INSERT_CHEST);
-            preparedStatement.setString(1, faction.getName());
+            preparedStatement.setString(1, factionState.getName());
             preparedStatement.setBytes(2, chestBytes);
             preparedStatement.execute();
             preparedStatement.close();
 
             preparedStatement = connection.prepareStatement(exists ? UPDATE_OFFICER_PERMS : INSERT_OFFICER_PERMS);
-            preparedStatement.setString(1, faction.getName());
-            preparedStatement.setBoolean(2, faction.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.USE));
-            preparedStatement.setBoolean(3, faction.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.PLACE));
-            preparedStatement.setBoolean(4, faction.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.DESTROY));
-            preparedStatement.setBoolean(5, faction.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.CLAIM));
-            preparedStatement.setBoolean(6, faction.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.ATTACK));
-            preparedStatement.setBoolean(7, faction.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.INVITE));
+            preparedStatement.setString(1, factionState.getName());
+            preparedStatement.setBoolean(2, factionState.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.USE));
+            preparedStatement.setBoolean(3, factionState.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.PLACE));
+            preparedStatement.setBoolean(4, factionState.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.DESTROY));
+            preparedStatement.setBoolean(5, factionState.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.CLAIM));
+            preparedStatement.setBoolean(6, factionState.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.ATTACK));
+            preparedStatement.setBoolean(7, factionState.getPerms().get(FactionMemberType.OFFICER).get(FactionPermType.INVITE));
             if(exists)
-                preparedStatement.setString(8, faction.getName());
+                preparedStatement.setString(8, factionState.getName());
 
             preparedStatement.execute();
             preparedStatement.close();
 
             preparedStatement = connection.prepareStatement(exists ? UPDATE_MEMBER_PERMS : INSERT_MEMBER_PERMS);
-            preparedStatement.setString(1, faction.getName());
-            preparedStatement.setBoolean(2, faction.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.USE));
-            preparedStatement.setBoolean(3, faction.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.PLACE));
-            preparedStatement.setBoolean(4, faction.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.DESTROY));
-            preparedStatement.setBoolean(5, faction.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.CLAIM));
-            preparedStatement.setBoolean(6, faction.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.ATTACK));
-            preparedStatement.setBoolean(7, faction.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.INVITE));
+            preparedStatement.setString(1, factionState.getName());
+            preparedStatement.setBoolean(2, factionState.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.USE));
+            preparedStatement.setBoolean(3, factionState.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.PLACE));
+            preparedStatement.setBoolean(4, factionState.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.DESTROY));
+            preparedStatement.setBoolean(5, factionState.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.CLAIM));
+            preparedStatement.setBoolean(6, factionState.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.ATTACK));
+            preparedStatement.setBoolean(7, factionState.getPerms().get(FactionMemberType.MEMBER).get(FactionPermType.INVITE));
             if(exists)
-                preparedStatement.setString(8, faction.getName());
+                preparedStatement.setString(8, factionState.getName());
 
             preparedStatement.execute();
             preparedStatement.close();
 
             preparedStatement = connection.prepareStatement(exists ? UPDATE_RECRUIT_PERMS : INSERT_RECRUIT_PERMS);
-            preparedStatement.setString(1, faction.getName());
-            preparedStatement.setBoolean(2, faction.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.USE));
-            preparedStatement.setBoolean(3, faction.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.PLACE));
-            preparedStatement.setBoolean(4, faction.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.DESTROY));
-            preparedStatement.setBoolean(5, faction.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.CLAIM));
-            preparedStatement.setBoolean(6, faction.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.ATTACK));
-            preparedStatement.setBoolean(7, faction.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.INVITE));
+            preparedStatement.setString(1, factionState.getName());
+            preparedStatement.setBoolean(2, factionState.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.USE));
+            preparedStatement.setBoolean(3, factionState.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.PLACE));
+            preparedStatement.setBoolean(4, factionState.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.DESTROY));
+            preparedStatement.setBoolean(5, factionState.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.CLAIM));
+            preparedStatement.setBoolean(6, factionState.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.ATTACK));
+            preparedStatement.setBoolean(7, factionState.getPerms().get(FactionMemberType.RECRUIT).get(FactionPermType.INVITE));
             if(exists)
-                preparedStatement.setString(8, faction.getName());
+                preparedStatement.setString(8, factionState.getName());
 
             preparedStatement.execute();
             preparedStatement.close();
 
             preparedStatement = connection.prepareStatement(exists ? UPDATE_ALLY_PERMS : INSERT_ALLY_PERMS);
-            preparedStatement.setString(1, faction.getName());
-            preparedStatement.setBoolean(2, faction.getPerms().get(FactionMemberType.ALLY).get(FactionPermType.USE));
-            preparedStatement.setBoolean(3, faction.getPerms().get(FactionMemberType.ALLY).get(FactionPermType.PLACE));
-            preparedStatement.setBoolean(4, faction.getPerms().get(FactionMemberType.ALLY).get(FactionPermType.DESTROY));
+            preparedStatement.setString(1, factionState.getName());
+            preparedStatement.setBoolean(2, factionState.getPerms().get(FactionMemberType.ALLY).get(FactionPermType.USE));
+            preparedStatement.setBoolean(3, factionState.getPerms().get(FactionMemberType.ALLY).get(FactionPermType.PLACE));
+            preparedStatement.setBoolean(4, factionState.getPerms().get(FactionMemberType.ALLY).get(FactionPermType.DESTROY));
             if(exists)
-                preparedStatement.setString(5, faction.getName());
+                preparedStatement.setString(5, factionState.getName());
 
             preparedStatement.execute();
             preparedStatement.close();

@@ -1,12 +1,10 @@
 package io.github.aquerr.eaglefactions.common.storage.sql;
 
 import io.github.aquerr.eaglefactions.api.EagleFactions;
-import io.github.aquerr.eaglefactions.api.entities.Faction;
 import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
-import io.github.aquerr.eaglefactions.common.caching.FactionsCache;
 import io.github.aquerr.eaglefactions.common.entities.FactionPlayerImpl;
+import io.github.aquerr.eaglefactions.common.entities.FactionPlayerState;
 import io.github.aquerr.eaglefactions.common.storage.PlayerStorage;
-import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -83,13 +81,13 @@ public abstract class AbstractPlayerStorage implements PlayerStorage
     }
 
     @Override
-    public boolean savePlayer(final FactionPlayer player)
+    public boolean savePlayer(final FactionPlayerState playerState)
     {
         try(final Connection connection = this.sqlProvider.getConnection())
         {
             //Add or update?
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_PLAYER_WHERE_UUID);
-            preparedStatement.setString(1, player.getUniqueId().toString());
+            preparedStatement.setString(1, playerState.getUniqueId().toString());
             final ResultSet factionSelect = preparedStatement.executeQuery();
             final boolean exists = factionSelect.next();
             preparedStatement.close();
@@ -97,14 +95,14 @@ public abstract class AbstractPlayerStorage implements PlayerStorage
             String queryToUse = exists ? UPDATE_PLAYER : INSERT_PLAYER;
 
             final PreparedStatement statement = connection.prepareStatement(queryToUse);
-            statement.setString(1, player.getUniqueId().toString());
-            statement.setString(2, player.getName());
-            statement.setString(3, player.getFactionName().orElse(null));
-            statement.setFloat(4, player.getPower());
-            statement.setFloat(5, player.getMaxPower());
-            statement.setBoolean(6, player.diedInWarZone());
+            statement.setString(1, playerState.getUniqueId().toString());
+            statement.setString(2, playerState.getName());
+            statement.setString(3, playerState.getFactionName());
+            statement.setFloat(4, playerState.getPower());
+            statement.setFloat(5, playerState.getMaxpower());
+            statement.setBoolean(6, playerState.diedInWarZone());
             if(exists)
-                statement.setString(7, player.getUniqueId().toString()); //Where part
+                statement.setString(7, playerState.getUniqueId().toString()); //Where part
             final boolean didSucceed = statement.execute();
             statement.close();
             return didSucceed;

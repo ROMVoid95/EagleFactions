@@ -6,6 +6,7 @@ import io.github.aquerr.eaglefactions.api.entities.*;
 import io.github.aquerr.eaglefactions.common.entities.FactionChestImpl;
 import io.github.aquerr.eaglefactions.common.entities.FactionImpl;
 import io.github.aquerr.eaglefactions.common.entities.FactionPlayerImpl;
+import io.github.aquerr.eaglefactions.common.entities.FactionState;
 import io.github.aquerr.eaglefactions.common.storage.serializers.EFTypeSerializers;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 public class ConfigurateHelper
 {
-    public static boolean putFactionInNode(final ConfigurationNode configNode, final Faction faction)
+    public static boolean putFactionInNode(final ConfigurationNode configNode, final FactionState faction)
     {
         try
         {

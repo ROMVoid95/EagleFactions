@@ -1,15 +1,15 @@
 package io.github.aquerr.eaglefactions.common.storage.task;
 
-import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
+import io.github.aquerr.eaglefactions.common.entities.FactionPlayerState;
 
 public class SavePlayerTask implements IStorageTask
 {
-    private final FactionPlayer factionPlayer;
+    private final FactionPlayerState factionPlayerState;
     private final Runnable runnable;
 
-    public SavePlayerTask(FactionPlayer factionPlayer, Runnable runnable)
+    public SavePlayerTask(FactionPlayerState factionPlayerState, Runnable runnable)
     {
-        this.factionPlayer = factionPlayer;
+        this.factionPlayerState = factionPlayerState;
         this.runnable = runnable;
     }
 

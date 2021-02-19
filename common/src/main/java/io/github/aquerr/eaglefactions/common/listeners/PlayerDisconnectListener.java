@@ -37,6 +37,6 @@ public class PlayerDisconnectListener extends AbstractListener
         optionalFaction.ifPresent(faction -> getPlugin().getFactionLogic().setLastOnline(faction, Instant.now()));
 
         //TODO: Unload player cache...
-        FactionsCache.removePlayer(player.getUniqueId());
+        FactionsCache.getInstance().removePlayer(player.getUniqueId());
     }
 }

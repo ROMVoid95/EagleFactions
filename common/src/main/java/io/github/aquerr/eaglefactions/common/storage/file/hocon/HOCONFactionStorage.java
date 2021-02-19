@@ -4,6 +4,7 @@ import com.flowpowered.math.vector.Vector3i;
 import io.github.aquerr.eaglefactions.api.entities.Claim;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
 import io.github.aquerr.eaglefactions.common.entities.FactionImpl;
+import io.github.aquerr.eaglefactions.common.entities.FactionState;
 import io.github.aquerr.eaglefactions.common.storage.FactionStorage;
 import io.github.aquerr.eaglefactions.common.storage.serializers.ClaimTypeSerializer;
 import io.github.aquerr.eaglefactions.common.util.FileUtils;
@@ -21,7 +22,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -96,7 +96,6 @@ public class HOCONFactionStorage implements FactionStorage
             //Claims were stored differently before so we need to load them properly
             for (final Faction faction : factions)
             {
-                final Set<Claim> updatedClaims = new HashSet<>();
                 final Object claims = configNode.getNode("factions", faction.getName(), "claims").getValue();
                 if (claims != null)
                 {
@@ -109,11 +108,10 @@ public class HOCONFactionStorage implements FactionStorage
                         final UUID worldUUID = UUID.fromString(world);
                         final Vector3i chunkPosition = ClaimTypeSerializer.deserializeVector3i(chunk);
                         final Claim claim = new Claim(worldUUID, chunkPosition);
-                        updatedClaims.add(claim);
+                        faction.getClaims().add(claim);
                     }
                 }
-                final Faction updatedFaction = faction.toBuilder().setClaims(updatedClaims).build();
-                correctedFactions.add(updatedFaction);
+                correctedFactions.add(faction);
             }
 
             //Generate new factions files.
@@ -127,7 +125,7 @@ public class HOCONFactionStorage implements FactionStorage
                     Files.createFile(factionFilePath);
                     final HoconConfigurationLoader hoconConfigurationLoader = HoconConfigurationLoader.builder().setDefaultOptions(ConfigurateHelper.getDefaultOptions()).setPath(factionFilePath).build();
                     final ConfigurationNode node = hoconConfigurationLoader.load();
-                    ConfigurateHelper.putFactionInNode(node, faction);
+                    ConfigurateHelper.putFactionInNode(node, new FactionState(faction));
                     hoconConfigurationLoader.save(node);
                 }
             }
@@ -143,17 +141,17 @@ public class HOCONFactionStorage implements FactionStorage
         if (!this.factionLoaders.containsKey("warzone.conf"))
         {
             final Faction warzone = FactionImpl.builder("WarZone", Text.of("WZ"), new UUID(0, 0)).build();
-            saveFaction(warzone);
+            saveFaction(new FactionState(warzone));
         }
         if (!this.factionLoaders.containsKey("safezone.conf"))
         {
             final Faction safezone = FactionImpl.builder("SafeZone", Text.of("SZ"), new UUID(0, 0)).build();
-            saveFaction(safezone);
+            saveFaction(new FactionState(safezone));
         }
     }
 
     @Override
-    public boolean saveFaction(final Faction faction)
+    public boolean saveFaction(final FactionState faction)
     {
         try
         {

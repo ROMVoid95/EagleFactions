@@ -7,120 +7,129 @@ import io.github.aquerr.eaglefactions.api.entities.Faction;
 import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
 
 import javax.annotation.Nullable;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+@Singleton
 public class FactionsCache
 {
+    private static final FactionsCache INSTANCE = new FactionsCache();
+
+
     //TODO: Consider converting factions and players cache into Guava Cache.
-    private static final Map<String, Faction> FACTIONS_CACHE = new HashMap<>();
-    private static final Map<UUID, FactionPlayer> FACTION_PLAYER_CACHE = new HashMap<>();
+    private final Map<String, Faction> factionsCache = new HashMap<>();
+    private final Map<UUID, FactionPlayer> factionsPlayerCache = new HashMap<>();
 
     // TODO: Add cache time to configuration?
-    private static final Cache<Claim, Optional<Faction>> CLAIMS_CACHE = CacheBuilder.newBuilder()
+    private final Cache<Claim, Optional<Faction>> claimsCache = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.SECONDS)
             .build();
+
+    public static FactionsCache getInstance()
+    {
+        return INSTANCE;
+    }
 
     private FactionsCache()
     {
 
     }
 
-    public static Optional<Faction> getClaimFaction(Claim claim) {
-        return CLAIMS_CACHE.getIfPresent(claim);
+    public Optional<Faction> getClaimFaction(Claim claim) {
+        return claimsCache.getIfPresent(claim);
     }
 
-    public static void updateClaimFaction(Claim claim, Optional<Faction> faction) {
-        CLAIMS_CACHE.put(claim, faction);
+    public void updateClaimFaction(Claim claim, Optional<Faction> faction) {
+        claimsCache.put(claim, faction);
     }
 
-    public static Map<UUID, FactionPlayer> getPlayersMap()
+    public Map<UUID, FactionPlayer> getPlayersMap()
     {
-        return FACTION_PLAYER_CACHE;
+        return factionsPlayerCache;
     }
 
-    public static void savePlayer(final FactionPlayer factionPlayer)
+    public void savePlayer(final FactionPlayer factionPlayer)
     {
-        synchronized (FACTION_PLAYER_CACHE)
+        synchronized (factionsPlayerCache)
         {
-            FACTION_PLAYER_CACHE.put(factionPlayer.getUniqueId(), factionPlayer);
+            factionsPlayerCache.put(factionPlayer.getUniqueId(), factionPlayer);
         }
     }
 
-    public static @Nullable FactionPlayer getPlayer(final UUID playerUniqueId)
+    public @Nullable FactionPlayer getPlayer(final UUID playerUniqueId)
     {
-        synchronized (FACTION_PLAYER_CACHE)
+        synchronized (factionsPlayerCache)
         {
-            return FACTION_PLAYER_CACHE.get(playerUniqueId);
+            return factionsPlayerCache.get(playerUniqueId);
         }
     }
 
-    public static void removePlayer(final UUID playerUniqueId)
+    public void removePlayer(final UUID playerUniqueId)
     {
-        synchronized (FACTION_PLAYER_CACHE)
+        synchronized (factionsPlayerCache)
         {
-            FACTION_PLAYER_CACHE.remove(playerUniqueId);
+            factionsPlayerCache.remove(playerUniqueId);
         }
     }
 
-    public static Map<String, Faction> getFactionsMap()
+    public Map<String, Faction> getFactionsMap()
     {
-        return Collections.unmodifiableMap(FACTIONS_CACHE);
+        return Collections.unmodifiableMap(factionsCache);
     }
 
-    public static void saveFaction(final Faction faction)
+    public void saveFaction(final Faction faction)
     {
-        synchronized (FACTIONS_CACHE)
+        synchronized (factionsCache)
         {
-            Faction factionToUpdate = FACTIONS_CACHE.get(faction.getName().toLowerCase());
+            Faction factionToUpdate = factionsCache.get(faction.getName().toLowerCase());
 
             if (factionToUpdate != null)
             {
-                FACTIONS_CACHE.replace(factionToUpdate.getName().toLowerCase(), faction);
-                factionToUpdate.getClaims().forEach(claim -> CLAIMS_CACHE.put(claim, Optional.empty()));
+                factionsCache.replace(factionToUpdate.getName().toLowerCase(), faction);
+                factionToUpdate.getClaims().forEach(claim -> claimsCache.put(claim, Optional.empty()));
             }
             else
             {
-                FACTIONS_CACHE.put(faction.getName().toLowerCase(), faction);
+                factionsCache.put(faction.getName().toLowerCase(), faction);
             }
 
             if(!faction.getClaims().isEmpty())
             {
-                faction.getClaims().forEach(claim -> CLAIMS_CACHE.put(claim, Optional.of(faction)));
+                faction.getClaims().forEach(claim -> claimsCache.put(claim, Optional.of(faction)));
             }
         }
     }
 
-    public static void removeFaction(final String factionName)
+    public void removeFaction(final String factionName)
     {
-        synchronized (FACTIONS_CACHE)
+        synchronized (factionsCache)
         {
-            Faction faction = FACTIONS_CACHE.remove(factionName.toLowerCase());
-            faction.getClaims().forEach(claim -> CLAIMS_CACHE.put(claim, Optional.empty()));
+            Faction faction = factionsCache.remove(factionName.toLowerCase());
+            faction.getClaims().forEach(claim -> claimsCache.put(claim, Optional.empty()));
         }
     }
 
     @Nullable
-    public static Faction getFaction(final String factionName)
+    public Faction getFaction(final String factionName)
     {
-        final Faction optionalFaction = FACTIONS_CACHE.get(factionName.toLowerCase());
-        return optionalFaction;
+        return factionsCache.get(factionName.toLowerCase());
     }
 
-    public static Map<Claim, Optional<Faction>> getClaims()
+    public Map<Claim, Optional<Faction>> getClaims()
     {
-        return CLAIMS_CACHE.asMap();
+        return claimsCache.asMap();
     }
 
-    public static void removeClaim(final Claim claim)
+    public void removeClaim(final Claim claim)
     {
-        CLAIMS_CACHE.put(claim, Optional.empty());
+        claimsCache.put(claim, Optional.empty());
     }
 
-    public static void clear()
+    public void clear()
     {
-        CLAIMS_CACHE.invalidateAll();
-        FACTIONS_CACHE.clear();
-        FACTION_PLAYER_CACHE.clear();
+        claimsCache.invalidateAll();
+        factionsCache.clear();
+        factionsPlayerCache.clear();
     }
 }

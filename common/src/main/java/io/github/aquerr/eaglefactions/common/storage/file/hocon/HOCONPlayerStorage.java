@@ -1,6 +1,7 @@
 package io.github.aquerr.eaglefactions.common.storage.file.hocon;
 
 import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
+import io.github.aquerr.eaglefactions.common.entities.FactionPlayerState;
 import io.github.aquerr.eaglefactions.common.storage.PlayerStorage;
 import io.github.aquerr.eaglefactions.common.util.FileUtils;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -47,7 +48,7 @@ public class HOCONPlayerStorage implements PlayerStorage
     }
 
     @Override
-    public boolean savePlayer(FactionPlayer player)
+    public boolean savePlayer(FactionPlayerState player)
     {
 
         try
@@ -59,9 +60,9 @@ public class HOCONPlayerStorage implements PlayerStorage
 
             ConfigurationNode configurationNode = configurationLoader.load();
             configurationNode.getNode("name").setValue(player.getName());
-            configurationNode.getNode("faction").setValue(player.getFactionName().orElse(""));
+            configurationNode.getNode("faction").setValue(player.getFactionName());
             configurationNode.getNode("power").setValue(player.getPower());
-            configurationNode.getNode("maxpower").setValue(player.getMaxPower());
+            configurationNode.getNode("maxpower").setValue(player.getMaxpower());
             configurationNode.getNode("death-in-warzone").setValue(false);
             configurationLoader.save(configurationNode);
             return true;
@@ -79,7 +80,7 @@ public class HOCONPlayerStorage implements PlayerStorage
     {
         for (final FactionPlayer player : players)
         {
-            savePlayer(player);
+            savePlayer(new FactionPlayerState(player));
         }
         return true;
     }

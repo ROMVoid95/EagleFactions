@@ -15,9 +15,9 @@ import java.util.UUID;
 public class FactionPlayerImpl implements FactionPlayer
 {
     private final UUID uniqueId;
-    private final String name;
+    private String name;
 
-    private String factionName;
+    private Faction faction;
 
     private boolean diedInWarZone;
 
@@ -30,8 +30,21 @@ public class FactionPlayerImpl implements FactionPlayer
         this.uniqueId = uniqueId;
 
         if (StringUtils.isBlank(factionName))
-            this.factionName = null;
-        else this.factionName = factionName;
+            this.faction = null;
+        else this.faction = EagleFactionsPlugin.getPlugin().getFactionLogic().getFactionByName(factionName);
+
+        this.diedInWarZone = diedInWarZone;
+
+        this.power = power;
+        this.maxpower = maxpower;
+    }
+
+    public FactionPlayerImpl(final String playerName, final UUID uniqueId, final Faction faction, final float power, final float maxpower, final boolean diedInWarZone)
+    {
+        this.name = playerName;
+        this.uniqueId = uniqueId;
+
+        this.faction = faction;
 
         this.diedInWarZone = diedInWarZone;
 
@@ -48,7 +61,13 @@ public class FactionPlayerImpl implements FactionPlayer
     @Override
     public Optional<String> getFactionName()
     {
-        return Optional.ofNullable(this.factionName);
+        return Optional.ofNullable(this.faction.getName());
+    }
+
+    @Override
+    public void setFaction(Faction faction)
+    {
+        this.faction = faction;
     }
 
     @Override

@@ -1,21 +1,21 @@
 package io.github.aquerr.eaglefactions.common.storage.task;
 
-import io.github.aquerr.eaglefactions.api.entities.Faction;
+import io.github.aquerr.eaglefactions.common.entities.FactionState;
 
 public class UpdateFactionTask implements IStorageTask
 {
-    private final Faction faction;
+    private final FactionState factionState;
     private final Runnable runnable;
 
-    public UpdateFactionTask(final Faction faction, final Runnable runnable)
+    public UpdateFactionTask(final FactionState factionState, final Runnable runnable)
     {
-        this.faction = faction;
+        this.factionState = factionState;
         this.runnable = runnable;
     }
 
-    public Faction getFaction()
+    public FactionState getFactionState()
     {
-        return this.faction;
+        return this.factionState;
     }
 
     @Override

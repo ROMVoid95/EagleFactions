@@ -11,26 +11,25 @@ import java.util.*;
 
 /**
  * The implementation of Faction interface.
- * FactionImpl is an immutable object. To change its values, use FactionLogic or Faction.Builder
  */
 public class FactionImpl implements Faction
 {
-    private final String name;
-    private final Text tag;
-    private final String description;
-    private final String messageOfTheDay;
-    private final Set<UUID> recruits;
-    private final Set<UUID> members;
-    private final Set<String> truces;
-    private final Set<String> alliances;
-    private final Set<String> enemies;
-    private final UUID leader;
-    private final Set<UUID> officers;
-    private final Set<Claim> claims;
-    private final FactionHome home;
-    private final Instant lastOnline;
-    private final boolean isPublic;
-    private final Map<FactionMemberType, Map<FactionPermType, Boolean>> perms;
+    private String name;
+    private Text tag;
+    private String description;
+    private String messageOfTheDay;
+    private Set<UUID> recruits;
+    private Set<UUID> members;
+    private Set<String> truces;
+    private Set<String> alliances;
+    private Set<String> enemies;
+    private UUID leader;
+    private Set<UUID> officers;
+    private Set<Claim> claims;
+    private FactionHome home;
+    private Instant lastOnline;
+    private boolean isPublic;
+    private Map<FactionMemberType, Map<FactionPermType, Boolean>> perms;
 
     private FactionChest chest;
 
@@ -88,43 +87,43 @@ public class FactionImpl implements Faction
     @Override
     public Set<String> getTruces()
     {
-        return Collections.unmodifiableSet(this.truces);
+        return this.truces;
     }
 
     @Override
     public Set<String> getAlliances()
     {
-        return Collections.unmodifiableSet(this.alliances);
+        return this.alliances;
     }
 
     @Override
     public Set<Claim> getClaims()
     {
-        return Collections.unmodifiableSet(this.claims);
+        return this.claims;
     }
 
     @Override
     public Set<String> getEnemies()
     {
-        return Collections.unmodifiableSet(enemies);
+        return enemies;
     }
 
     @Override
     public Set<UUID> getMembers()
     {
-        return Collections.unmodifiableSet(this.members);
+        return this.members;
     }
 
     @Override
     public Set<UUID> getOfficers()
     {
-        return Collections.unmodifiableSet(officers);
+        return officers;
     }
 
     @Override
     public Set<UUID> getRecruits()
     {
-        return Collections.unmodifiableSet(this.recruits);
+        return this.recruits;
     }
 
     @Override
@@ -209,28 +208,130 @@ public class FactionImpl implements Faction
         else return this.recruits.contains(playerUUID);
     }
 
-    @Override
-    public Faction.Builder toBuilder()
-    {
-        final Faction.Builder factionBuilder = new BuilderImpl();
-        factionBuilder.setName(this.name);
-        factionBuilder.setTag(this.tag);
-        factionBuilder.setDescription(this.description);
-        factionBuilder.setMessageOfTheDay(this.messageOfTheDay);
-        factionBuilder.setLeader(this.leader);
-        factionBuilder.setOfficers(this.officers);
-        factionBuilder.setMembers(this.members);
-        factionBuilder.setRecruits(this.recruits);
-        factionBuilder.setAlliances(this.alliances);
-        factionBuilder.setEnemies(this.enemies);
-        factionBuilder.setClaims(this.claims);
-        factionBuilder.setLastOnline(this.lastOnline);
-        factionBuilder.setHome(this.home);
-        factionBuilder.setPerms(this.perms);
-        factionBuilder.setChest(this.chest);
-        factionBuilder.setIsPublic(this.isPublic);
+//    @Override
+//    public Faction.Builder toBuilder()
+//    {
+//        final Faction.Builder factionBuilder = new BuilderImpl();
+//        factionBuilder.setName(this.name);
+//        factionBuilder.setTag(this.tag);
+//        factionBuilder.setDescription(this.description);
+//        factionBuilder.setMessageOfTheDay(this.messageOfTheDay);
+//        factionBuilder.setLeader(this.leader);
+//        factionBuilder.setOfficers(this.officers);
+//        factionBuilder.setMembers(this.members);
+//        factionBuilder.setRecruits(this.recruits);
+//        factionBuilder.setAlliances(this.alliances);
+//        factionBuilder.setEnemies(this.enemies);
+//        factionBuilder.setClaims(this.claims);
+//        factionBuilder.setLastOnline(this.lastOnline);
+//        factionBuilder.setHome(this.home);
+//        factionBuilder.setPerms(this.perms);
+//        factionBuilder.setChest(this.chest);
+//        factionBuilder.setIsPublic(this.isPublic);
+//
+//        return factionBuilder;
+//    }
 
-        return factionBuilder;
+    @Override
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    @Override
+    public void setTag(Text tag)
+    {
+        this.tag = tag;
+    }
+
+    @Override
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    @Override
+    public void setMessageOfTheDay(String messageOfTheDay)
+    {
+        this.messageOfTheDay = messageOfTheDay;
+    }
+
+    @Override
+    public void setRecruits(Set<UUID> recruits)
+    {
+        this.recruits = recruits;
+    }
+
+    @Override
+    public void setMembers(Set<UUID> members)
+    {
+        this.members = members;
+    }
+
+    @Override
+    public void setTruces(Set<String> truces)
+    {
+        this.truces = truces;
+    }
+
+    @Override
+    public void setAlliances(Set<String> alliances)
+    {
+        this.alliances = alliances;
+    }
+
+    @Override
+    public void setEnemies(Set<String> enemies)
+    {
+        this.enemies = enemies;
+    }
+
+    @Override
+    public void setLeader(UUID leader)
+    {
+        this.leader = leader;
+    }
+
+    @Override
+    public void setOfficers(Set<UUID> officers)
+    {
+        this.officers = officers;
+    }
+
+    @Override
+    public void setClaims(Set<Claim> claims)
+    {
+        this.claims = claims;
+    }
+
+    @Override
+    public void setHome(FactionHome home)
+    {
+        this.home = home;
+    }
+
+    @Override
+    public void setLastOnline(Instant lastOnline)
+    {
+        this.lastOnline = lastOnline;
+    }
+
+    @Override
+    public void setIsPublic(boolean isPublic)
+    {
+        this.isPublic = isPublic;
+    }
+
+    @Override
+    public void setPerms(Map<FactionMemberType, Map<FactionPermType, Boolean>> perms)
+    {
+        this.perms = perms;
+    }
+
+    @Override
+    public void setChest(FactionChest chest)
+    {
+        this.chest = chest;
     }
 
     public static Faction.Builder builder(final String name, final Text tag, final UUID leader)

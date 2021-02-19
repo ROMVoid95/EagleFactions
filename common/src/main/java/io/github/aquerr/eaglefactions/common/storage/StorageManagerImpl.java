@@ -8,6 +8,8 @@ import io.github.aquerr.eaglefactions.api.storage.StorageManager;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
 import io.github.aquerr.eaglefactions.common.caching.FactionsCache;
 import io.github.aquerr.eaglefactions.common.entities.FactionPlayerImpl;
+import io.github.aquerr.eaglefactions.common.entities.FactionPlayerState;
+import io.github.aquerr.eaglefactions.common.entities.FactionState;
 import io.github.aquerr.eaglefactions.common.storage.file.hocon.HOCONFactionStorage;
 import io.github.aquerr.eaglefactions.common.storage.file.hocon.HOCONPlayerStorage;
 import io.github.aquerr.eaglefactions.common.storage.sql.h2.H2FactionStorage;
@@ -35,6 +37,7 @@ import java.util.concurrent.Executors;
 
 public class StorageManagerImpl implements StorageManager
 {
+    private final FactionsCache factionsCache = FactionsCache.getInstance();
     private final FactionStorage factionsStorage;
     private final PlayerStorage playerStorage;
     private final BackupStorage backupStorage;
@@ -88,15 +91,15 @@ public class StorageManagerImpl implements StorageManager
     @Override
     public void saveFaction(final Faction faction)
     {
-        queueStorageTask(new UpdateFactionTask(faction, () -> this.factionsStorage.saveFaction(faction)));
-        FactionsCache.saveFaction(faction);
+        FactionState factionState = new FactionState(faction);
+        queueStorageTask(new UpdateFactionTask(factionState, () -> this.factionsStorage.saveFaction(factionState)));
     }
 
     @Override
     public boolean deleteFaction(final String factionName)
     {
         queueStorageTask(new DeleteFactionTask(factionName, () -> this.factionsStorage.deleteFaction(factionName)));
-        FactionsCache.removeFaction(factionName);
+        factionsCache.removeFaction(factionName);
         return true;
     }
 
@@ -105,7 +108,7 @@ public class StorageManagerImpl implements StorageManager
     {
         try
         {
-            Faction factionCache = FactionsCache.getFaction(factionName);
+            Faction factionCache = factionsCache.getFaction(factionName);
             if(factionCache != null)
                 return factionCache;
 
@@ -113,7 +116,7 @@ public class StorageManagerImpl implements StorageManager
             if (faction == null)
                 return null;
 
-            FactionsCache.saveFaction(faction);
+            factionsCache.saveFaction(faction);
 
             return faction;
         }
@@ -131,14 +134,14 @@ public class StorageManagerImpl implements StorageManager
         final Set<Faction> factionSet = this.factionsStorage.getFactions();
         for (final Faction faction : factionSet)
         {
-            FactionsCache.saveFaction(faction);
+            factionsCache.saveFaction(faction);
         }
     }
 
     private void preparePlayerCache()
     {
         final Collection<FactionPlayer> players = this.playerStorage.getServerPlayers();
-        final Collection<Faction> factions = FactionsCache.getFactionsMap().values();
+        final Collection<Faction> factions = factionsCache.getFactionsMap().values();
         for (final FactionPlayer player : players)
         {
             FactionPlayer playerToSave = player;
@@ -155,14 +158,14 @@ public class StorageManagerImpl implements StorageManager
                 }
                 //Try to get correct faction for the player...
             }
-            FactionsCache.savePlayer(playerToSave);
+            factionsCache.savePlayer(playerToSave);
         }
     }
 
     @Override
     public void reloadStorage()
     {
-        FactionsCache.clear();
+        factionsCache.clear();
         this.factionsStorage.load();
         prepareFactionsCache();
 
@@ -170,17 +173,12 @@ public class StorageManagerImpl implements StorageManager
         preparePlayerCache();
     }
 
-//    @Override
-//    public boolean checkIfPlayerExists(final UUID playerUUID, final String playerName)
-//    {
-//        return FactionsCache.getPlayer(playerUUID) != null;
-//    }
-
     @Override
     public boolean savePlayer(final FactionPlayer factionPlayer)
     {
-        queueStorageTask(new SavePlayerTask(factionPlayer, () -> this.playerStorage.savePlayer(factionPlayer)));
-        FactionsCache.savePlayer(factionPlayer);
+        final FactionPlayerState factionPlayerState = new FactionPlayerState(factionPlayer);
+        queueStorageTask(new SavePlayerTask(factionPlayerState, () -> this.playerStorage.savePlayer(factionPlayerState)));
+        factionsCache.savePlayer(factionPlayer);
         return true;
     }
 
@@ -190,7 +188,7 @@ public class StorageManagerImpl implements StorageManager
     {
         try
         {
-            FactionPlayer cachedPlayer = FactionsCache.getPlayer(playerUUID);
+            FactionPlayer cachedPlayer = factionsCache.getPlayer(playerUUID);
             if(cachedPlayer != null)
                 return cachedPlayer;
 
@@ -198,7 +196,7 @@ public class StorageManagerImpl implements StorageManager
             if (player == null)
                 return null;
 
-            FactionsCache.savePlayer(player);
+            factionsCache.savePlayer(player);
 
             return player;
         }

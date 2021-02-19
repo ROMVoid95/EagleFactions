@@ -3,6 +3,7 @@ package io.github.aquerr.eaglefactions.common.storage;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
 import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
 import io.github.aquerr.eaglefactions.common.caching.FactionsCache;
+import io.github.aquerr.eaglefactions.common.entities.FactionState;
 import io.github.aquerr.eaglefactions.common.storage.file.hocon.ConfigurateHelper;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -56,7 +57,7 @@ public class BackupStorage
 //                createFileIfNotExists(factionFilePath, false);
                 final HoconConfigurationLoader configurationLoader = HoconConfigurationLoader.builder().setDefaultOptions(ConfigurateHelper.getDefaultOptions()).setPath(factionFilePath).build();
                 final ConfigurationNode configurationNode = configurationLoader.createEmptyNode();
-                ConfigurateHelper.putFactionInNode(configurationNode, faction);
+                ConfigurateHelper.putFactionInNode(configurationNode, new FactionState(faction));
                 configurationLoader.save(configurationNode);
             }
 
@@ -189,8 +190,8 @@ public class BackupStorage
 
         for (final Faction faction : factions)
         {
-            this.factionStorage.saveFaction(faction);
-            FactionsCache.saveFaction(faction);
+            this.factionStorage.saveFaction(new FactionState(faction));
+            FactionsCache.getInstance().saveFaction(faction);
         }
 
         this.playerStorage.savePlayers(players);

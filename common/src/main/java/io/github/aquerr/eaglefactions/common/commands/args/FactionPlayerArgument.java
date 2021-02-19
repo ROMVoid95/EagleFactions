@@ -33,7 +33,7 @@ public class FactionPlayerArgument extends CommandElement
     protected FactionPlayer parseValue(final CommandSource source, final CommandArgs args) throws ArgumentParseException
     {
         //Just in case someone new entered the server after start.
-        Set<FactionPlayer> serverPlayers = new HashSet<>(FactionsCache.getPlayersMap().values());
+        Set<FactionPlayer> serverPlayers = new HashSet<>(FactionsCache.getInstance().getPlayersMap().values());
 
         if (args.hasNext())
         {
@@ -56,7 +56,7 @@ public class FactionPlayerArgument extends CommandElement
     @Override
     public List<String> complete(final CommandSource src, final CommandArgs args, final CommandContext context)
     {
-        final Map<UUID, FactionPlayer> factionPlayerMap = FactionsCache.getPlayersMap();
+        final Map<UUID, FactionPlayer> factionPlayerMap = FactionsCache.getInstance().getPlayersMap();
 
         final List<FactionPlayer> list = new ArrayList<>(factionPlayerMap.values());
         if (args.hasNext())
