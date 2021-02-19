@@ -13,9 +13,10 @@ import io.github.aquerr.eaglefactions.api.managers.PlayerManager;
 import io.github.aquerr.eaglefactions.api.managers.PowerManager;
 import io.github.aquerr.eaglefactions.api.managers.ProtectionManager;
 import io.github.aquerr.eaglefactions.api.storage.StorageManager;
-import io.github.aquerr.eaglefactions.common.commands.*;
+import io.github.aquerr.eaglefactions.common.commands.AllCommands;
+import io.github.aquerr.eaglefactions.common.commands.VersionCommand;
 import io.github.aquerr.eaglefactions.common.commands.access.*;
-import io.github.aquerr.eaglefactions.common.commands.management.*;
+import io.github.aquerr.eaglefactions.common.commands.admin.*;
 import io.github.aquerr.eaglefactions.common.commands.args.BackupNameArgument;
 import io.github.aquerr.eaglefactions.common.commands.args.FactionArgument;
 import io.github.aquerr.eaglefactions.common.commands.args.FactionPlayerArgument;
@@ -24,13 +25,13 @@ import io.github.aquerr.eaglefactions.common.commands.backup.BackupCommand;
 import io.github.aquerr.eaglefactions.common.commands.backup.RestoreBackupCommand;
 import io.github.aquerr.eaglefactions.common.commands.claiming.*;
 import io.github.aquerr.eaglefactions.common.commands.general.*;
+import io.github.aquerr.eaglefactions.common.commands.management.*;
 import io.github.aquerr.eaglefactions.common.commands.rank.DemoteCommand;
 import io.github.aquerr.eaglefactions.common.commands.rank.PromoteCommand;
 import io.github.aquerr.eaglefactions.common.commands.rank.SetLeaderCommand;
 import io.github.aquerr.eaglefactions.common.commands.relation.AllyCommand;
 import io.github.aquerr.eaglefactions.common.commands.relation.EnemyCommand;
 import io.github.aquerr.eaglefactions.common.commands.relation.TruceCommand;
-import io.github.aquerr.eaglefactions.common.commands.admin.*;
 import io.github.aquerr.eaglefactions.common.config.ConfigurationImpl;
 import io.github.aquerr.eaglefactions.common.entities.FactionImpl;
 import io.github.aquerr.eaglefactions.common.entities.FactionPlayerImpl;
@@ -60,13 +61,16 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.asset.AssetId;
+import org.spongepowered.api.command.CommandCallable;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.*;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.permission.PermissionService;
@@ -88,7 +92,7 @@ import java.util.concurrent.TimeUnit;
 public class EagleFactionsPlugin implements EagleFactions
 {
     //TODO: Convert these fields to instance fields.
-    public static final Map<List<String>, CommandSpec> SUBCOMMANDS = new HashMap<>();
+    public static final Map<List<String>, CommandCallable> SUBCOMMANDS = new HashMap<>();
     public static final List<Invite> INVITE_LIST = new ArrayList<>();
     public static final List<AllyRequest> TRUCE_INVITE_LIST = new ArrayList<>();
     public static final List<AllyRequest> ALLY_INVITE_LIST = new ArrayList<>();
@@ -290,60 +294,25 @@ public class EagleFactionsPlugin implements EagleFactions
     private void initializeCommands()
     {
         //Help command should display all possible commands in plugin.
-        SUBCOMMANDS.put(Collections.singletonList("help"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_HELP_DESC))
-                .permission(PluginPermissions.HELP_COMMAND)
-                .arguments(GenericArguments.optional(GenericArguments.integer(Text.of("page"))))
-                .executor(new HelpCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("help"), new HelpCommand(this));
 
         //Create faction command.
-        SUBCOMMANDS.put(Arrays.asList("c", "create"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_CREATE_DESC))
-                .permission(PluginPermissions.CREATE_COMMAND)
-                .arguments(GenericArguments.string(Text.of("tag")),
-                        GenericArguments.string(Text.of("name")))
-                .executor(new CreateCommand(this))
-                .build());
+        SUBCOMMANDS.put(Arrays.asList("c", "create"), new CreateCommand(this));
 
         //Disband faction command.
-        SUBCOMMANDS.put(Collections.singletonList("disband"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_DISBAND_DESC))
-                .permission(PluginPermissions.DISBAND_COMMAND)
-                .arguments(GenericArguments.optional(new FactionArgument(this, Text.of("faction"))))
-                .executor(new DisbandCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("disband"), new DisbandCommand(this));
 
         //List all factions.
-        SUBCOMMANDS.put(Collections.singletonList("list"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_LIST_DESC))
-                .permission(PluginPermissions.LIST_COMMAND)
-                .executor(new ListCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("list"), new ListCommand(this));
 
         //Invite a player to the faction.
-        SUBCOMMANDS.put(Collections.singletonList("invite"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_INVITE_DESC))
-                .permission(PluginPermissions.INVITE_COMMAND)
-                .arguments(GenericArguments.onlyOne(GenericArguments.player(Text.of("player"))))
-                .executor(new InviteCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("invite"), new InviteCommand(this));
 
         //Kick a player from the faction.
-        SUBCOMMANDS.put(Collections.singletonList("kick"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_KICK_DESC))
-                .permission(PluginPermissions.KICK_COMMAND)
-                .arguments(GenericArguments.onlyOne(new FactionPlayerArgument(this, Text.of("player"))))
-                .executor(new KickCommand(this))
-                .build());
+        SUBCOMMANDS.put(Collections.singletonList("kick"), new KickCommand(this));
 
         //Join faction command
-        SUBCOMMANDS.put(Arrays.asList("j", "join"), CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_JOIN_DESC))
-                .permission(PluginPermissions.JOIN_COMMAND)
-                .arguments(new FactionArgument(this, Text.of("faction")))
-                .executor(new JoinCommand(this))
-                .build());
+        SUBCOMMANDS.put(Arrays.asList("j", "join"), new JoinCommand(this));
 
         //Leave faction command
         SUBCOMMANDS.put(Collections.singletonList("leave"), CommandSpec.builder()
@@ -698,15 +667,14 @@ public class EagleFactionsPlugin implements EagleFactions
                 .child(accessibleByFactionCommand, "notAccessibleByFaction")
                 .build());
 
+        // SetFaction Command
+        SUBCOMMANDS.put(Collections.singletonList("setfaction"), new SetFactionCommand(this));
+
         //Build all commands
-        CommandSpec commandEagleFactions = CommandSpec.builder()
-                .description(Text.of(Messages.COMMAND_HELP_DESC))
-                .executor(new HelpCommand(this))
-                .children(SUBCOMMANDS)
-                .build();
+        AllCommands allCommands = new AllCommands(this);
 
         //Register commands
-        Sponge.getCommandManager().register(this, commandEagleFactions, "factions", "faction", "f");
+        Sponge.getCommandManager().register(this, allCommands, "factions", "faction", "f");
     }
 
     private void registerListeners()

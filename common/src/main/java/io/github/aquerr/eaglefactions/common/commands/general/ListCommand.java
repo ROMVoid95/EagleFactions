@@ -2,13 +2,17 @@ package io.github.aquerr.eaglefactions.common.commands.general;
 
 import io.github.aquerr.eaglefactions.api.EagleFactions;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
-import io.github.aquerr.eaglefactions.common.commands.AbstractCommand;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
+import io.github.aquerr.eaglefactions.common.PluginPermissions;
+import io.github.aquerr.eaglefactions.common.commands.CommandBase;
+import io.github.aquerr.eaglefactions.common.commands.EagleFactionsCommand;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.text.Text;
@@ -19,7 +23,13 @@ import org.spongepowered.api.text.format.TextStyles;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class ListCommand extends AbstractCommand
+@EagleFactionsCommand(
+        permission = PluginPermissions.LIST_COMMAND,
+        canBeUsedFromConsole = true,
+        mustBeInFaction = false,
+        minimumRank = FactionMemberType.NONE
+)
+public class ListCommand extends CommandBase
 {
     public ListCommand(final EagleFactions plugin)
     {
@@ -27,7 +37,19 @@ public class ListCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext context) throws CommandException
+    protected CommandElement[] getDefinedCommandArgs()
+    {
+        return new CommandElement[0];
+    }
+
+    @Override
+    protected Text getDescription()
+    {
+        return Text.of(Messages.COMMAND_LIST_DESC);
+    }
+
+    @Override
+    public CommandResult execute(final CommandSource source, final CommandContext context, boolean hasAdminMode) throws CommandException
     {
         CompletableFuture.runAsync(() ->{
             Collection<Faction> factionsList = super.getPlugin().getFactionLogic().getFactions().values();

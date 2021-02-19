@@ -2,22 +2,34 @@ package io.github.aquerr.eaglefactions.common.commands.management;
 
 import io.github.aquerr.eaglefactions.api.EagleFactions;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.common.EagleFactionsPlugin;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
-import io.github.aquerr.eaglefactions.common.commands.AbstractCommand;
+import io.github.aquerr.eaglefactions.common.PluginPermissions;
+import io.github.aquerr.eaglefactions.common.commands.CommandBase;
+import io.github.aquerr.eaglefactions.common.commands.EagleFactionsCommand;
+import io.github.aquerr.eaglefactions.common.commands.args.FactionArgument;
 import io.github.aquerr.eaglefactions.common.events.EventRunner;
 import io.github.aquerr.eaglefactions.common.messaging.Messages;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.Optional;
 
-public class DisbandCommand extends AbstractCommand
+@EagleFactionsCommand(
+        permission = PluginPermissions.DISBAND_COMMAND,
+        canBeUsedFromConsole = false,
+        mustBeInFaction = false,
+        minimumRank = FactionMemberType.LEADER
+)
+public class DisbandCommand extends CommandBase
 {
     public DisbandCommand(EagleFactions plugin)
     {
@@ -25,11 +37,22 @@ public class DisbandCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
+    protected CommandElement[] getDefinedCommandArgs()
     {
-        if(!(source instanceof Player))
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.ONLY_IN_GAME_PLAYERS_CAN_USE_THIS_COMMAND));
+        return new CommandElement[] {
+                GenericArguments.optional(new FactionArgument(super.getPlugin(), Text.of("faction")))
+        };
+    }
 
+    @Override
+    protected Text getDescription()
+    {
+        return Text.of(Messages.COMMAND_DISBAND_DESC);
+    }
+
+    @Override
+    public CommandResult execute(CommandSource source, CommandContext context, boolean hasAdminMode) throws CommandException
+    {
         final Player player = (Player) source;
         final Optional<Faction> optionalFaction = context.getOne("faction");
         final Faction faction = optionalFaction.orElse(super.getPlugin().getFactionLogic().getFactionByPlayerUUID(player.getUniqueId())
@@ -39,18 +62,22 @@ public class DisbandCommand extends AbstractCommand
         if(faction.isSafeZone() || faction.isWarZone())
             throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.THIS_FACTION_CANNOT_BE_DISBANDED));
 
-        if (player.getUniqueId().equals(faction.getLeader()))
+        if (isLeader(player, faction))
         {
             runDisbandEventAndDisband(player, faction, false);
         }
         else
         {
-            final boolean hasAdminMode = super.getPlugin().getPlayerManager().hasAdminMode(player);
             if (!hasAdminMode)
                 throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, Messages.YOU_NEED_TO_TOGGLE_FACTION_ADMIN_MODE_TO_DO_THIS));
             runDisbandEventAndDisband(player, faction, true);
         }
         return CommandResult.success();
+    }
+
+    private boolean isLeader(final Player player, final Faction faction)
+    {
+        return player.getUniqueId().equals(faction.getLeader());
     }
 
     private void runDisbandEventAndDisband(final Player player, final Faction faction, final boolean forceRemovedByAdmin)

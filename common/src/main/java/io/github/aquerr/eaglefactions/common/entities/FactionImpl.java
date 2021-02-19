@@ -8,6 +8,8 @@ import org.spongepowered.api.text.Text;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The implementation of Faction interface.
@@ -130,13 +132,14 @@ public class FactionImpl implements Faction
     @Override
     public Set<UUID> getPlayers()
     {
-        //This set does not need to unmodifiable as making changes in it won't affect the faction object.
         final Set<UUID> players = new HashSet<>();
         players.add(getLeader());
         players.addAll(getRecruits());
         players.addAll(getMembers());
         players.addAll(getOfficers());
-        return players;
+        return players.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -160,7 +163,10 @@ public class FactionImpl implements Faction
     @Override
     public FactionMemberType getPlayerMemberType(final UUID playerUUID)
     {
-        if (this.leader.equals(playerUUID))
+        if (playerUUID == null)
+            return FactionMemberType.NONE;
+
+        if (playerUUID.equals(this.leader))
             return FactionMemberType.LEADER;
         else if(this.officers.contains(playerUUID))
             return FactionMemberType.OFFICER;

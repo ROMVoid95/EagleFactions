@@ -82,6 +82,8 @@ public final class PluginPermissions
     public static final String RELOAD_COMMAND = "eaglefactions.admin.reload";
     public static final String VERSION_NOTIFY = "eaglefactions.admin.version.notify";
 
+    public static final String SET_FACTION_COMMAND = "eaglefactions.admin.setfaction";
+
     //Build & Interaction
     public static final String SAFE_ZONE_BUILD = "eaglefactions.safezone.build";
     public static final String WAR_ZONE_BUILD = "eaglefactions.warzone.build";

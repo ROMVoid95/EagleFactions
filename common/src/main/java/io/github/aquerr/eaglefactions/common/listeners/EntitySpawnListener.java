@@ -87,7 +87,7 @@ public class EntitySpawnListener extends AbstractListener
                 }
             }
 
-            if(entity.toString().contains("EntityCustomNpc")) return;
+            if(entity.getClass().getName().contains("EntityCustomNpc")) return;
 
             if (isItemUsed)
             {

@@ -3,9 +3,12 @@ package io.github.aquerr.eaglefactions.common.commands.management;
 import io.github.aquerr.eaglefactions.api.EagleFactions;
 import io.github.aquerr.eaglefactions.api.config.FactionsConfig;
 import io.github.aquerr.eaglefactions.api.entities.Faction;
+import io.github.aquerr.eaglefactions.api.entities.FactionMemberType;
 import io.github.aquerr.eaglefactions.api.entities.FactionPlayer;
 import io.github.aquerr.eaglefactions.common.PluginInfo;
-import io.github.aquerr.eaglefactions.common.commands.AbstractCommand;
+import io.github.aquerr.eaglefactions.common.PluginPermissions;
+import io.github.aquerr.eaglefactions.common.commands.CommandBase;
+import io.github.aquerr.eaglefactions.common.commands.EagleFactionsCommand;
 import io.github.aquerr.eaglefactions.common.entities.FactionImpl;
 import io.github.aquerr.eaglefactions.common.entities.FactionPlayerImpl;
 import io.github.aquerr.eaglefactions.common.events.EventRunner;
@@ -18,6 +21,8 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -27,10 +32,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/**
- * Created by Aquerr on 2017-07-12.
- */
-public class CreateCommand extends AbstractCommand
+@EagleFactionsCommand(
+        permission = PluginPermissions.CREATE_COMMAND,
+        canBeUsedFromConsole = true,
+        mustBeInFaction = false,
+        minimumRank = FactionMemberType.NONE
+)
+public class CreateCommand extends CommandBase
 {
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("[A-Za-z][A-Za-z0-9]*$");
 
@@ -43,7 +51,22 @@ public class CreateCommand extends AbstractCommand
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
+    protected CommandElement[] getDefinedCommandArgs()
+    {
+        return new CommandElement[] {
+                GenericArguments.string(Text.of("tag")),
+                GenericArguments.string(Text.of("name"))
+        };
+    }
+
+    @Override
+    protected Text getDescription()
+    {
+        return Text.of(Messages.COMMAND_CREATE_DESC);
+    }
+
+    @Override
+    public CommandResult execute(CommandSource source, CommandContext context, boolean hasAdminMode) throws CommandException
     {
         if (source instanceof Player)
         {
